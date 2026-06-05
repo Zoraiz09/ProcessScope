@@ -17,13 +17,7 @@ import { Logo } from "@/components/layout/Logo";
 import { KernelDiagram } from "@/components/landing/KernelDiagram";
 import { Pill } from "@/components/ui/Pill";
 
-const NAV_LINKS = [
-  { label: "Dashboard", to: "/app" },
-  { label: "Process Explorer", to: "/app/processes" },
-  { label: "Scheduler Simulator", to: "/app/scheduler" },
-  { label: "AI Analyst", to: "/app/ai" },
-  { label: "Pricing", to: "#pricing" },
-];
+const NAV_LINKS = [{ label: "Home", to: "/" }];
 
 const FEATURES = [
   { icon: Activity, title: "Live Telemetry", body: "CPU, memory, disk and network sampled every second over a WebSocket stream from real psutil counters." },
