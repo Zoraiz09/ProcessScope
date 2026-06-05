@@ -1,0 +1,136 @@
+import {
+  GitFork,
+  Activity,
+  Cpu,
+  CircuitBoard,
+  Network,
+  AlertOctagon,
+  LineChart,
+  History,
+  BellRing,
+  Sparkles,
+} from "lucide-react";
+import type { ModuleSpec } from "@/pages/ModuleScaffold";
+
+export const MODULE_SPECS: Record<string, ModuleSpec> = {
+  tree: {
+    icon: GitFork,
+    title: "Process Dependency Tree",
+    purpose: "Visualize the process hierarchy — who spawned what.",
+    status: "live",
+    capabilities: [
+      "Interactive expand / collapse nodes",
+      "Parent process tracking",
+      "Child process spawn analysis",
+      "Renders the live /api/processes/tree graph",
+    ],
+  },
+  threads: {
+    icon: Activity,
+    title: "Thread Explorer",
+    purpose: "Analyze thread-level activity per process.",
+    status: "live",
+    capabilities: [
+      "Thread ID, CPU usage, creation time & state",
+      "Per-process thread visualization graph",
+      "Live thread counts from psutil",
+      "Drill-down from any process",
+    ],
+  },
+  scheduler: {
+    icon: Cpu,
+    title: "CPU Scheduler Simulator",
+    purpose: "Teach CPU scheduling algorithms visually.",
+    status: "sim",
+    capabilities: [
+      "FCFS, SJF, Priority, Round Robin, Multilevel Queue",
+      "Custom process burst-time input",
+      "Animated Gantt chart output",
+      "Waiting / turnaround / response / throughput metrics",
+    ],
+  },
+  states: {
+    icon: CircuitBoard,
+    title: "Process State Visualizer",
+    purpose: "Demonstrate the process lifecycle state machine.",
+    status: "sim",
+    capabilities: [
+      "New → Ready → Running → Waiting → Terminated",
+      "Animated state transitions",
+      "Step-through scheduler interaction",
+      "Highlights current process state",
+    ],
+  },
+  resources: {
+    icon: Network,
+    title: "Resource Allocation",
+    purpose: "Visualize resource ownership across processes.",
+    status: "sim",
+    capabilities: [
+      "CPU, Printer, Disk, Network resources",
+      "Process → resource assignment graph",
+      "Interactive allocation editing",
+      "Foundation for deadlock detection",
+    ],
+  },
+  deadlock: {
+    icon: AlertOctagon,
+    title: "Deadlock Detection",
+    purpose: "Demonstrate deadlock formation and resolution.",
+    status: "sim",
+    capabilities: [
+      "Build hold-and-wait scenarios",
+      "Resource-allocation graph with cycle detection",
+      "Step-by-step deadlock explanation",
+      "Recovery & resolution suggestions",
+    ],
+  },
+  analytics: {
+    icon: LineChart,
+    title: "Historical Analytics",
+    purpose: "Store and chart system activity over time.",
+    status: "live",
+    capabilities: [
+      "CPU, memory, process, thread & network history",
+      "5m / 1h / 24h / 7d time ranges",
+      "Line, area & heat-map charts",
+      "Backed by the live metrics buffer",
+    ],
+  },
+  replay: {
+    icon: History,
+    title: "System Replay Engine",
+    purpose: "Replay historical system activity like CCTV.",
+    status: "soon",
+    capabilities: [
+      "Timeline of system events",
+      "Play / pause / fast-forward / rewind",
+      "Scrub to any moment in history",
+      "Event annotations (process start, CPU spike…)",
+    ],
+  },
+  alerts: {
+    icon: BellRing,
+    title: "Alerts & Anomaly Detection",
+    purpose: "Notify users of unusual system behavior.",
+    status: "live",
+    capabilities: [
+      "High CPU (>90%) & high memory (>85%) rules",
+      "Excessive process-creation detection",
+      "Warning & critical severities",
+      "Live rule evaluation against the stream",
+    ],
+  },
+  ai: {
+    icon: Sparkles,
+    title: "AI Performance Analyst",
+    purpose: "Explain system behavior in plain English.",
+    status: "soon",
+    capabilities: [
+      "Root-cause suggestions for CPU/memory spikes",
+      "Daily performance summary report",
+      "Optimization recommendations",
+      "Natural-language system Q&A",
+    ],
+  },
+};

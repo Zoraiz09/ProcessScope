@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    border-color: theme("colors.ink");
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    background-image:
+      linear-gradient(to right, rgba(11, 11, 11, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(11, 11, 11, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  ::selection {
+    @apply bg-lime text-ink;
+  }
+
+  /* Brutalist scrollbar */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme("colors.paper");
+    border-left: 2px solid theme("colors.ink");
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.ink");
+    border: 2px solid theme("colors.paper");
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.lime.dark");
+  }
+}
+
+@layer components {
+  .card {
+    @apply border-3 border-ink bg-panel shadow-brutal;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 border-2 border-ink px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 border-3 border-ink px-5 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-100 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink text-paper shadow-brutal hover:bg-ink-soft;
+  }
+
+  .btn-lime {
+    @apply btn bg-lime text-ink shadow-brutal hover:bg-lime-bright;
+  }
+
+  .btn-ghost {
+    @apply btn bg-panel text-ink shadow-brutal hover:bg-paper;
+  }
+
+  .grid-noise {
+    background-image:
+      linear-gradient(to right, rgba(11, 11, 11, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(11, 11, 11, 0.06) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
