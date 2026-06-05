@@ -13,7 +13,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import HTTPException
 
-from .monitor import SystemMonitor, list_processes, process_detail, process_tree
+from .monitor import (
+    SystemMonitor,
+    list_processes,
+    process_detail,
+    process_threads,
+    process_tree,
+)
 
 app = FastAPI(title="ProcessScope API", version="1.0.0")
 
@@ -141,6 +147,14 @@ async def processes(limit: int = 250) -> dict:
 @app.get("/api/processes/tree")
 async def proc_tree() -> dict:
     return await asyncio.to_thread(process_tree)
+
+
+@app.get("/api/processes/{pid}/threads")
+async def proc_threads(pid: int) -> dict:
+    data = await asyncio.to_thread(process_threads, pid)
+    if data is None:
+        raise HTTPException(status_code=404, detail="process not found")
+    return data
 
 
 @app.get("/api/processes/{pid}")

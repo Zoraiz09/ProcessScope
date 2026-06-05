@@ -79,6 +79,23 @@ export interface ProcessDetail extends ProcessInfo {
   thread_list: { id: number; user_time: number; system_time: number }[];
 }
 
+export interface ThreadInfo {
+  id: number;
+  cpu: number;
+  user_time: number;
+  system_time: number;
+  total_time: number;
+  state: "running" | "waiting";
+}
+
+export interface ThreadSnapshot {
+  pid: number;
+  name: string;
+  count: number;
+  active: number;
+  threads: ThreadInfo[];
+}
+
 export type ProcessState =
   | "new"
   | "ready"

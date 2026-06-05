@@ -5,6 +5,8 @@ import { MODULE_SPECS } from "@/lib/moduleSpecs";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import ProcessExplorer from "@/pages/ProcessExplorer";
+import ThreadExplorer from "@/pages/ThreadExplorer";
+import SchedulerSimulator from "@/pages/SchedulerSimulator";
 
 export default function App() {
   return (
@@ -15,8 +17,8 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="processes" element={<ProcessExplorer />} />
         <Route path="tree" element={<ModuleScaffold spec={MODULE_SPECS.tree} />} />
-        <Route path="threads" element={<ModuleScaffold spec={MODULE_SPECS.threads} />} />
-        <Route path="scheduler" element={<ModuleScaffold spec={MODULE_SPECS.scheduler} />} />
+        <Route path="threads" element={<ThreadExplorer />} />
+        <Route path="scheduler" element={<SchedulerSimulator />} />
         <Route path="states" element={<ModuleScaffold spec={MODULE_SPECS.states} />} />
         <Route path="resources" element={<ModuleScaffold spec={MODULE_SPECS.resources} />} />
         <Route path="deadlock" element={<ModuleScaffold spec={MODULE_SPECS.deadlock} />} />

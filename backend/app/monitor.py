@@ -240,6 +240,51 @@ def process_detail(pid: int) -> dict[str, Any] | None:
         }
 
 
+def process_threads(pid: int, interval: float = 0.4) -> dict[str, Any] | None:
+    """Per-thread CPU activity for a process.
+
+    psutil exposes cumulative user/system time per thread but no live CPU% or
+    state, so we sample twice over `interval` and derive each thread's CPU share
+    of a single core. State is derived (running if it consumed CPU this window).
+    """
+    try:
+        p = psutil.Process(pid)
+        name = p.name()
+        t0 = {t.id: (t.user_time, t.system_time) for t in p.threads()}
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        return None
+
+    time.sleep(interval)
+
+    try:
+        now = p.threads()
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        return None
+
+    threads: list[dict[str, Any]] = []
+    for t in now:
+        u0, s0 = t0.get(t.id, (t.user_time, t.system_time))
+        delta = (t.user_time - u0) + (t.system_time - s0)
+        cpu = max(0.0, min(100.0, delta / interval * 100.0))
+        threads.append({
+            "id": t.id,
+            "cpu": round(cpu, 1),
+            "user_time": round(t.user_time, 2),
+            "system_time": round(t.system_time, 2),
+            "total_time": round(t.user_time + t.system_time, 2),
+            "state": "running" if cpu > 0.5 else "waiting",
+        })
+    threads.sort(key=lambda x: x["cpu"], reverse=True)
+    active = sum(1 for t in threads if t["state"] == "running")
+    return {
+        "pid": pid,
+        "name": name,
+        "count": len(threads),
+        "active": active,
+        "threads": threads,
+    }
+
+
 def process_tree() -> dict[str, Any]:
     """Build a nested parent/child tree of all processes."""
     nodes: dict[int, dict[str, Any]] = {}
