@@ -11,6 +11,7 @@ import {
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/api";
 import type { ProcessTree, TreeNode } from "@/lib/types";
 
 export default function DependencyTree() {
@@ -22,7 +23,7 @@ export default function DependencyTree() {
   const load = async () => {
     setLoading(true);
     try {
-      const r = await fetch("/api/processes/tree");
+      const r = await fetch(apiUrl("/api/processes/tree"));
       const data: ProcessTree = await r.json();
       setTree(data);
       // Expand the first two levels by default.

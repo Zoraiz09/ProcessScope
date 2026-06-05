@@ -4,6 +4,7 @@ import { Search, RefreshCw, Activity, Cpu, ChevronDown } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/api";
 import type { ProcessInfo, ThreadSnapshot, ThreadInfo } from "@/lib/types";
 
 // Kernel / SYSTEM-owned processes whose threads psutil can't enumerate.
@@ -35,7 +36,7 @@ export default function ThreadExplorer() {
 
   // Load process list (sorted by thread count) once.
   useEffect(() => {
-    fetch("/api/processes?limit=400")
+    fetch(apiUrl("/api/processes?limit=400"))
       .then((r) => r.json())
       .then((d) => {
         const list: ProcessInfo[] = (d.processes ?? [])
@@ -57,7 +58,7 @@ export default function ThreadExplorer() {
     const load = async () => {
       setLoading(true);
       try {
-        const r = await fetch(`/api/processes/${pid}/threads`);
+        const r = await fetch(apiUrl(`/api/processes/${pid}/threads`));
         if (r.ok && alive && pidRef.current === pid) setSnap(await r.json());
         else if (!r.ok && alive) setSnap(null);
       } catch {

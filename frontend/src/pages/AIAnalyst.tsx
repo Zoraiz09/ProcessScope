@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/api";
 
 /* ------------------------------------------------------------------ *
  * AI Performance Analyst — chats with the backend /api/ai/* endpoints,
@@ -64,7 +65,7 @@ export default function AIAnalyst() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/ai/status")
+    fetch(apiUrl("/api/ai/status"))
       .then((r) => r.json())
       .then((d) => {
         setConfigured(!!d.configured);
@@ -101,7 +102,7 @@ export default function AIAnalyst() {
     let content = "";
     let reasoning = "";
     try {
-      const res = await fetch("/api/ai/stream", {
+      const res = await fetch(apiUrl("/api/ai/stream"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode, question: mode === "chat" ? question : "" }),

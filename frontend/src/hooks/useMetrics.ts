@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { MetricsSnapshot } from "@/lib/types";
+import { wsUrl } from "@/lib/api";
 
 type Status = "connecting" | "live" | "reconnecting" | "offline";
 
-const WS_URL =
-  (window.location.protocol === "https:" ? "wss://" : "ws://") +
-  window.location.host +
-  "/ws/metrics";
+const WS_URL = wsUrl("/ws/metrics");
 
 // ~10 minutes of 1Hz samples — enough to make Analytics & Replay meaningful
 // while staying cheap to re-render. Dashboard sparklines just read the tail.

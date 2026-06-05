@@ -1,0 +1,18 @@
+# Render Blueprint — one-click backend deploy.
+# In the Render dashboard: New → Blueprint → point at this repo.
+# Supports WebSockets and long-running processes (unlike serverless).
+services:
+  - type: web
+    name: processscope-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free # note: free instances cold-start after ~15 min idle
+    healthCheckPath: /api/health
+    envVars:
+      - key: CEREBRAS_API_KEY
+        sync: false # set this secret in the Render dashboard
+      - key: CEREBRAS_MODEL
+        value: gpt-oss-120b
+      - key: ALLOWED_ORIGINS
+        sync: false # e.g. https://your-app.vercel.app

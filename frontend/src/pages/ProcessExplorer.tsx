@@ -3,6 +3,7 @@ import { Search, RefreshCw, ArrowUpDown, X } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { cn, formatBytes, formatPct } from "@/lib/utils";
+import { apiUrl } from "@/lib/api";
 import type { ProcessInfo, ProcessDetail } from "@/lib/types";
 
 type SortKey = "cpu" | "memory" | "threads" | "name" | "pid";
@@ -26,7 +27,7 @@ export default function ProcessExplorer() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/processes?limit=300");
+      const res = await fetch(apiUrl("/api/processes?limit=300"));
       const data = await res.json();
       setProcs(data.processes ?? []);
     } catch {
@@ -180,7 +181,7 @@ function ProcessDrawer({ proc, onClose }: { proc: ProcessInfo; onClose: () => vo
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    fetch(`/api/processes/${proc.pid}`)
+    fetch(apiUrl(`/api/processes/${proc.pid}`))
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => alive && setDetail(d))
       .catch(() => alive && setDetail(null))

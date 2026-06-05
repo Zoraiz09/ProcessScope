@@ -32,10 +32,17 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI(title="ProcessScope API", version="1.0.0")
 
+# Configurable origins for production. Comma-separated ALLOWED_ORIGINS, e.g.
+# "https://processscope.vercel.app". Defaults to "*" for local/dev.
+# Note: allow_credentials must be False when origins is "*" (browser rule);
+# this app uses no cookies, so that's fine.
+_origins_env = os.getenv("ALLOWED_ORIGINS", "*").strip()
+_origins = ["*"] if _origins_env in ("", "*") else [o.strip() for o in _origins_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_origins,
+    allow_credentials=_origins != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
