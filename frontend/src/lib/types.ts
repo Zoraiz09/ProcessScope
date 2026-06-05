@@ -96,6 +96,18 @@ export interface ThreadSnapshot {
   threads: ThreadInfo[];
 }
 
+export interface TreeNode {
+  pid: number;
+  ppid: number;
+  name: string;
+  children: TreeNode[];
+}
+
+export interface ProcessTree {
+  roots: TreeNode[];
+  count: number;
+}
+
 export type ProcessState =
   | "new"
   | "ready"

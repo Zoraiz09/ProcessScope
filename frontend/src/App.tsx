@@ -7,6 +7,9 @@ import Dashboard from "@/pages/Dashboard";
 import ProcessExplorer from "@/pages/ProcessExplorer";
 import ThreadExplorer from "@/pages/ThreadExplorer";
 import SchedulerSimulator from "@/pages/SchedulerSimulator";
+import DependencyTree from "@/pages/DependencyTree";
+import DeadlockDetection from "@/pages/DeadlockDetection";
+import ResourceAllocation from "@/pages/ResourceAllocation";
 
 export default function App() {
   return (
@@ -16,12 +19,12 @@ export default function App() {
       <Route path="/app" element={<AppShell />}>
         <Route index element={<Dashboard />} />
         <Route path="processes" element={<ProcessExplorer />} />
-        <Route path="tree" element={<ModuleScaffold spec={MODULE_SPECS.tree} />} />
+        <Route path="tree" element={<DependencyTree />} />
         <Route path="threads" element={<ThreadExplorer />} />
         <Route path="scheduler" element={<SchedulerSimulator />} />
         <Route path="states" element={<ModuleScaffold spec={MODULE_SPECS.states} />} />
-        <Route path="resources" element={<ModuleScaffold spec={MODULE_SPECS.resources} />} />
-        <Route path="deadlock" element={<ModuleScaffold spec={MODULE_SPECS.deadlock} />} />
+        <Route path="resources" element={<ResourceAllocation />} />
+        <Route path="deadlock" element={<DeadlockDetection />} />
         <Route path="analytics" element={<ModuleScaffold spec={MODULE_SPECS.analytics} />} />
         <Route path="replay" element={<ModuleScaffold spec={MODULE_SPECS.replay} />} />
         <Route path="alerts" element={<ModuleScaffold spec={MODULE_SPECS.alerts} />} />

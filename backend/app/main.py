@@ -120,13 +120,48 @@ class ProcessCache:
         }
 
 
+class TreeCache:
+    """Background refresher for the process tree (ppid scan is slow on Windows)."""
+
+    def __init__(self, interval: float = 6.0) -> None:
+        self.interval = interval
+        self.data: dict | None = None
+        self._task: asyncio.Task | None = None
+        self._lock = asyncio.Lock()
+
+    async def _refresh_once(self) -> None:
+        self.data = await asyncio.to_thread(process_tree)
+
+    async def _run(self) -> None:
+        while True:
+            try:
+                await self._refresh_once()
+            except Exception:
+                pass
+            await asyncio.sleep(self.interval)
+
+    def ensure_running(self) -> None:
+        if self._task is None or self._task.done():
+            self._task = asyncio.create_task(self._run())
+
+    async def get(self) -> dict:
+        self.ensure_running()
+        if self.data is None:
+            async with self._lock:
+                if self.data is None:
+                    await self._refresh_once()
+        return self.data or {"roots": [], "count": 0}
+
+
 process_cache = ProcessCache()
+tree_cache = TreeCache()
 
 
 @app.on_event("startup")
 async def _startup() -> None:
-    # Warm the process cache so the first UI load is fast.
+    # Warm the caches so the first UI load is fast.
     process_cache.ensure_running()
+    tree_cache.ensure_running()
 
 
 @app.get("/api/health")
@@ -146,7 +181,7 @@ async def processes(limit: int = 250) -> dict:
 
 @app.get("/api/processes/tree")
 async def proc_tree() -> dict:
-    return await asyncio.to_thread(process_tree)
+    return await tree_cache.get()
 
 
 @app.get("/api/processes/{pid}/threads")
