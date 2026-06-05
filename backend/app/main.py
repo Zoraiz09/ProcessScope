@@ -6,13 +6,19 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import os
+from pathlib import Path
 from typing import Set
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
+from . import ai
 from .monitor import (
     SystemMonitor,
     list_processes,
@@ -20,6 +26,9 @@ from .monitor import (
     process_threads,
     process_tree,
 )
+
+# Load backend/.env so CEREBRAS_API_KEY etc. are available regardless of cwd.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 app = FastAPI(title="ProcessScope API", version="1.0.0")
 
@@ -198,6 +207,60 @@ async def proc_detail(pid: int) -> dict:
     if detail is None:
         raise HTTPException(status_code=404, detail="process not found")
     return detail
+
+
+class AIRequest(BaseModel):
+    mode: str = "summary"  # summary | rootcause | optimize | chat
+    question: str = ""
+
+
+@app.get("/api/ai/status")
+async def ai_status() -> dict:
+    return {"configured": ai.is_configured(), "model": os.getenv("CEREBRAS_MODEL", ai.DEFAULT_MODEL)}
+
+
+@app.post("/api/ai/analyze")
+async def ai_analyze(req: AIRequest) -> dict:
+    if not ai.is_configured():
+        raise HTTPException(status_code=503, detail="AI analyst is not configured (missing CEREBRAS_API_KEY).")
+
+    # Assemble fresh context from the server's own monitor + process cache.
+    snapshot = await asyncio.to_thread(monitor.snapshot)
+    proc_data = await process_cache.get(200)
+    try:
+        result = await ai.analyze(
+            mode=req.mode,
+            question=req.question,
+            snapshot=snapshot,
+            processes=proc_data.get("processes", []),
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+    return result
+
+
+@app.post("/api/ai/stream")
+async def ai_stream(req: AIRequest):
+    if not ai.is_configured():
+        raise HTTPException(status_code=503, detail="AI analyst is not configured (missing CEREBRAS_API_KEY).")
+
+    snapshot = await asyncio.to_thread(monitor.snapshot)
+    proc_data = await process_cache.get(200)
+    generator = ai.analyze_stream(
+        mode=req.mode,
+        question=req.question,
+        snapshot=snapshot,
+        processes=proc_data.get("processes", []),
+    )
+    return StreamingResponse(
+        generator,
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # disable proxy buffering for live tokens
+        },
+    )
 
 
 @app.websocket("/ws/metrics")

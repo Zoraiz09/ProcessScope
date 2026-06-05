@@ -57,14 +57,14 @@ export default function Landing() {
               </Link>
             ))}
           </nav>
-          <Link to="/app" className="btn-lime !px-4 !py-2.5 text-xs">
+          <Link to="/app" className="btn-lime !px-4 !py-2.5 text-xs shadow-brutal-glow">
             Launch App
           </Link>
         </div>
       </header>
 
       {/* ---- Hero ---- */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden bg-grad-mesh">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 md:px-8 md:py-20 lg:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -89,7 +89,7 @@ export default function Landing() {
               with high-fidelity line-art diagnostics.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/app" className="btn-primary group">
+              <Link to="/app" className="btn-primary group shadow-brutal-glow">
                 Start Live Tracking
                 <PlayCircle size={18} className="transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -99,10 +99,10 @@ export default function Landing() {
               </a>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-2 font-mono text-[11px] uppercase tracking-wider text-muted">
-              <span>● 12 modules</span>
-              <span>● real psutil data</span>
-              <span>● websocket stream</span>
+            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 font-mono text-[11px] uppercase tracking-wider text-muted">
+              <span className="flex items-center gap-2"><span className="h-2 w-2 glow-dot bg-lime-deep" /> 13 modules</span>
+              <span className="flex items-center gap-2"><span className="h-2 w-2 glow-dot bg-lime-deep" /> real psutil data</span>
+              <span className="flex items-center gap-2"><span className="h-2 w-2 glow-dot bg-lime-deep" /> websocket stream</span>
             </div>
           </motion.div>
 
@@ -113,7 +113,9 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="relative mx-auto w-full max-w-lg"
           >
-            <div className="card grid-noise rotate-[-1.5deg] p-4 shadow-brutal-xl">
+            {/* soft glow halo behind the diagram */}
+            <div className="pointer-events-none absolute -inset-8 -z-10 rounded-full bg-lime/30 blur-3xl" />
+            <div className="card-rich rotate-[-1.5deg] p-4 shadow-brutal-glow-lg">
               <div className="mb-2 flex items-center justify-between border-b-2 border-ink pb-2">
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider">
                   kernel.map
@@ -126,14 +128,15 @@ export default function Landing() {
               </div>
               <KernelDiagram className="h-auto w-full" />
             </div>
-            <div className="absolute -bottom-4 -right-3 rotate-2 border-3 border-ink bg-ink px-3 py-1.5 font-mono text-[10px] font-bold uppercase text-lime shadow-brutal-sm">
+            <div className="absolute -bottom-4 -right-3 flex rotate-2 items-center gap-2 border-3 border-ink bg-grad-ink px-3 py-1.5 font-mono text-[10px] font-bold uppercase text-lime shadow-brutal-sm animate-glow-pulse">
+              <span className="h-1.5 w-1.5 glow-dot bg-lime" />
               syscall trace · live
             </div>
           </motion.div>
         </div>
 
         {/* ---- Sector strip ---- */}
-        <div className="border-y-3 border-ink bg-ink py-3 text-paper">
+        <div className="border-y-3 border-ink bg-grad-ink py-3 text-paper">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 md:px-8">
             {SECTORS.map((s) => (
               <span key={s.label} className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
@@ -166,9 +169,9 @@ export default function Landing() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 + i * 0.06 }}
-              className="card group p-5 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-brutal-lg"
+              className="card-rich group p-5 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-brutal-glow-lg"
             >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center border-3 border-ink bg-lime shadow-brutal-sm">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center border-3 border-ink bg-grad-lime shadow-brutal-sm transition-shadow group-hover:shadow-glow-sm">
                 <f.icon size={20} strokeWidth={2.2} />
               </div>
               <h3 className="font-display text-lg font-bold">{f.title}</h3>
@@ -180,8 +183,10 @@ export default function Landing() {
 
       {/* ---- CTA ---- */}
       <section className="mx-auto max-w-7xl px-5 pb-24 md:px-8">
-        <div className="card relative overflow-hidden bg-ink p-10 text-paper shadow-brutal-xl md:p-16">
+        <div className="card-ink p-10 shadow-brutal-glow-lg md:p-16">
           <div className="grid-noise pointer-events-none absolute inset-0 opacity-[0.07]" />
+          {/* lime glow corners to echo the dashboard hero banner */}
+          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-lime/25 blur-3xl" />
           <div className="relative max-w-2xl">
             <Pill variant="lime" className="mb-5">Ready when you are</Pill>
             <h2 className="font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl">
@@ -191,7 +196,7 @@ export default function Landing() {
               No agents to install. Launch the dashboard and watch live CPU,
               memory, process and thread activity stream in real time.
             </p>
-            <Link to="/app" className="btn-lime mt-8">
+            <Link to="/app" className="btn-lime mt-8 shadow-brutal-glow">
               Launch ProcessScope
               <ArrowRight size={18} />
             </Link>

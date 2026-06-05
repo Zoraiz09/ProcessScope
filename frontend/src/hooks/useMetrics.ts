@@ -8,7 +8,9 @@ const WS_URL =
   window.location.host +
   "/ws/metrics";
 
-const HISTORY_LEN = 60;
+// ~10 minutes of 1Hz samples — enough to make Analytics & Replay meaningful
+// while staying cheap to re-render. Dashboard sparklines just read the tail.
+const HISTORY_LEN = 600;
 
 export interface MetricsState {
   snapshot: MetricsSnapshot | null;

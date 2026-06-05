@@ -10,12 +10,13 @@ import {
   Clock,
   Boxes,
   Activity,
+  Gauge,
 } from "lucide-react";
 import { useMetricsContext } from "@/hooks/MetricsContext";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { SegmentBar } from "@/components/ui/SegmentBar";
+import { RingGauge } from "@/components/ui/RingGauge";
+import { MetricArea } from "@/components/ui/MetricArea";
 import { Sparkline } from "@/components/ui/Sparkline";
-import { Pill } from "@/components/ui/Pill";
 import { formatBytes, formatPct } from "@/lib/utils";
 
 export default function Dashboard() {
@@ -26,129 +27,117 @@ export default function Dashboard() {
   }
 
   const { cpu, memory, disk, network, system } = snapshot;
-  const cpuHist = history.map((h) => h.cpu.percent);
-  const memHist = history.map((h) => h.memory.percent);
-  const netDownHist = history.map((h) => h.network.download_speed);
+  const tail = history.slice(-60);
+  const cpuHist = tail.map((h) => h.cpu.percent);
+  const memHist = tail.map((h) => h.memory.percent);
+  const netDownHist = tail.map((h) => h.network.download_speed);
 
   return (
     <div className="space-y-6">
-      {/* system banner */}
-      <Card className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <Stat label="Host" value={system.hostname} />
-          <Stat label="OS" value={system.os} />
-          <Stat label="Uptime" value={formatUptime(system.uptime)} icon={<Clock size={13} />} />
+      {/* ---- dark hero banner ---- */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="card-ink grid-noise flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between"
+      >
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          <HeroStat label="Host" value={system.hostname} />
+          <HeroStat label="OS" value={system.os} />
+          <HeroStat label="Uptime" value={formatUptime(system.uptime)} icon={<Clock size={13} />} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Pill variant="ghost"><Boxes size={12} /> {system.process_count} processes</Pill>
-          <Pill variant="ghost"><Activity size={12} /> {system.thread_count} threads</Pill>
+        <div className="flex flex-wrap items-center gap-2">
+          <DarkPill icon={<Boxes size={13} />} value={system.process_count} label="processes" />
+          <DarkPill icon={<Activity size={13} />} value={system.thread_count} label="threads" />
+          <span className="flex items-center gap-2 border-2 border-lime/60 bg-lime/10 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-lime">
+            <span className="h-2 w-2 glow-dot animate-pulse-bar bg-lime" />
+            streaming
+          </span>
         </div>
-      </Card>
+      </motion.div>
 
-      {/* primary grid */}
+      {/* ---- gauge cards ---- */}
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
-        {/* CPU */}
-        <OverviewCard
-          title="CPU"
-          icon={<Cpu size={15} />}
-          delay={0}
-          headline={formatPct(cpu.percent, 0)}
-          sub={`${cpu.cores_logical} logical · ${cpu.cores_physical} physical`}
-        >
-          <SegmentBar value={cpu.percent} segments={12} className="mb-3" />
-          <div className="flex items-end justify-between">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px] text-ink-soft">
-              {cpu.freq_mhz != null && <span>{(cpu.freq_mhz / 1000).toFixed(2)} GHz</span>}
-              {cpu.temperature_c != null && (
-                <span className="flex items-center gap-1">
-                  <Thermometer size={11} /> {cpu.temperature_c}°C
-                </span>
-              )}
-              <span>{cpu.per_core.length} threads</span>
-            </div>
-            <Sparkline data={cpuHist} />
+        <GaugeCard title="CPU" icon={<Cpu size={15} />} delay={0}>
+          <RingGauge value={cpu.percent} label={formatPct(cpu.percent, 0)} sublabel="load" />
+          <div className="mt-3 grid w-full grid-cols-2 gap-x-4 gap-y-1 font-mono text-[11px] text-ink-soft">
+            <span>{cpu.cores_logical} threads</span>
+            <span>{cpu.cores_physical} cores</span>
+            {cpu.freq_mhz != null && <span>{(cpu.freq_mhz / 1000).toFixed(2)} GHz</span>}
+            {cpu.temperature_c != null && (
+              <span className="flex items-center gap-1">
+                <Thermometer size={11} /> {cpu.temperature_c}°C
+              </span>
+            )}
           </div>
-          {/* per-core mini grid */}
-          <div className="mt-3 grid grid-cols-8 gap-1 sm:grid-cols-12 xl:grid-cols-8">
-            {cpu.per_core.map((c, i) => (
-              <div
-                key={i}
-                title={`Core ${i}: ${c}%`}
-                className="h-6 border border-ink"
-                style={{
-                  background: `linear-gradient(to top, ${coreColor(c)} ${c}%, #F4F4F0 ${c}%)`,
-                }}
-              />
-            ))}
-          </div>
-        </OverviewCard>
+        </GaugeCard>
 
-        {/* Memory */}
-        <OverviewCard
-          title="Memory"
-          icon={<MemoryStick size={15} />}
-          delay={0.05}
-          headline={formatPct(memory.percent, 0)}
-          sub={`${formatBytes(memory.used)} / ${formatBytes(memory.total)}`}
-        >
-          <SegmentBar value={memory.percent} segments={12} className="mb-3" />
-          <div className="flex items-end justify-between">
-            <div className="space-y-1 font-mono text-[11px] text-ink-soft">
-              <div>Used: <b className="text-ink">{formatBytes(memory.used)}</b></div>
-              <div>Free: <b className="text-ink">{formatBytes(memory.available)}</b></div>
-              {memory.swap_total > 0 && (
-                <div>Swap: {formatPct(memory.swap_percent)}</div>
-              )}
-            </div>
-            <Sparkline data={memHist} fill="#A3E635" />
+        <GaugeCard title="Memory" icon={<MemoryStick size={15} />} delay={0.05}>
+          <RingGauge value={memory.percent} label={formatPct(memory.percent, 0)} sublabel="used" tone="info" />
+          <div className="mt-3 w-full space-y-1 font-mono text-[11px] text-ink-soft">
+            <Row k="Used" v={formatBytes(memory.used)} />
+            <Row k="Free" v={formatBytes(memory.available)} />
+            <Row k="Total" v={formatBytes(memory.total)} />
           </div>
-        </OverviewCard>
+        </GaugeCard>
 
-        {/* Storage */}
-        <OverviewCard
-          title="Storage"
-          icon={<HardDrive size={15} />}
-          delay={0.1}
-          headline={formatPct(disk.percent, 0)}
-          sub={`${formatBytes(disk.used)} / ${formatBytes(disk.total)}`}
-        >
-          <SegmentBar value={disk.percent} segments={12} className="mb-3" />
-          <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+        <GaugeCard title="Storage" icon={<HardDrive size={15} />} delay={0.1}>
+          <RingGauge value={disk.percent} label={formatPct(disk.percent, 0)} sublabel="used" />
+          <div className="mt-3 grid w-full grid-cols-2 gap-2 font-mono text-[11px]">
             <SpeedTile dir="read" value={disk.read_speed} icon={<ArrowDown size={12} />} />
             <SpeedTile dir="write" value={disk.write_speed} icon={<ArrowUp size={12} />} />
           </div>
-          <p className="mt-3 font-mono text-[11px] text-ink-soft">
-            Free: <b className="text-ink">{formatBytes(disk.free)}</b>
-          </p>
-        </OverviewCard>
+        </GaugeCard>
 
-        {/* Network */}
-        <OverviewCard
-          title="Network"
-          icon={<Wifi size={15} />}
-          delay={0.15}
-          headline={`${network.connections}`}
-          sub="active connections"
-        >
-          <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
-            <SpeedTile dir="down" value={network.download_speed} icon={<ArrowDown size={12} />} />
-            <SpeedTile dir="up" value={network.upload_speed} icon={<ArrowUp size={12} />} />
-          </div>
-          <div className="mt-3 flex items-end justify-between">
-            <div className="font-mono text-[11px] text-ink-soft">
-              <div>↓ {formatBytes(network.bytes_recv)}</div>
-              <div>↑ {formatBytes(network.bytes_sent)}</div>
+        {/* network: not a percentage → stat-led card */}
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card hover className="h-full bg-grad-panel">
+            <CardHeader title="Network" icon={<Wifi size={15} />} />
+            <div className="p-4">
+              <div className="mb-3 flex items-baseline gap-2">
+                <span className="font-display text-4xl font-bold tabular-nums">{network.connections}</span>
+                <span className="text-xs text-muted">connections</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                <SpeedTile dir="down" value={network.download_speed} icon={<ArrowDown size={12} />} />
+                <SpeedTile dir="up" value={network.upload_speed} icon={<ArrowUp size={12} />} />
+              </div>
+              <div className="mt-3 -mb-1">
+                <Sparkline data={netDownHist} width={240} height={40} fill="#14B8A6" stroke="#0B0B0B" />
+              </div>
             </div>
-            <Sparkline data={netDownHist} fill="#3B82F6" max={undefined} />
-          </div>
-        </OverviewCard>
+          </Card>
+        </motion.div>
       </div>
 
-      {/* live CPU history chart */}
-      <Card>
-        <CardHeader title="CPU Load — last 60s" icon={<Cpu size={14} />} />
-        <div className="p-4">
-          <BigChart data={cpuHist} />
+      {/* ---- history charts ---- */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ChartCard title="CPU Load" icon={<Cpu size={14} />} current={formatPct(cpu.percent, 0)}>
+          <MetricArea values={cpuHist} color="#84CC16" fixed100 height={200} fmt={(n) => formatPct(n, 0)} />
+        </ChartCard>
+        <ChartCard title="Memory" icon={<MemoryStick size={14} />} current={formatPct(memory.percent, 0)}>
+          <MetricArea values={memHist} color="#3B82F6" fixed100 height={200} fmt={(n) => formatPct(n, 0)} />
+        </ChartCard>
+      </div>
+
+      {/* ---- per-core load ---- */}
+      <Card className="bg-grad-panel">
+        <CardHeader title="Per-Core Load" icon={<Gauge size={14} />} right={<span className="font-mono text-[10px] uppercase text-muted">{cpu.per_core.length} logical cores</span>} />
+        <div className="grid grid-cols-4 gap-2 p-4 sm:grid-cols-8 xl:grid-cols-12">
+          {cpu.per_core.map((v, i) => (
+            <div key={i} title={`Core ${i}: ${v}%`} className="space-y-1">
+              <div className="relative h-20 border-2 border-ink bg-paper">
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0"
+                  style={{ background: coreGradient(v) }}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${v}%` }}
+                  transition={{ type: "spring", stiffness: 120, damping: 18 }}
+                />
+              </div>
+              <div className="text-center font-mono text-[9px] tabular-nums text-muted">{Math.round(v)}</div>
+            </div>
+          ))}
         </div>
       </Card>
     </div>
@@ -157,57 +146,85 @@ export default function Dashboard() {
 
 /* ---------------- subcomponents ---------------- */
 
-function OverviewCard({
+function GaugeCard({
   title,
   icon,
-  headline,
-  sub,
   children,
   delay,
 }: {
   title: string;
   icon: React.ReactNode;
-  headline: string;
-  sub: string;
   children: React.ReactNode;
   delay: number;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay }}
-    >
-      <Card hover>
+    <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay }}>
+      <Card hover className="h-full bg-grad-panel">
         <CardHeader title={title} icon={icon} />
-        <div className="p-4">
-          <div className="mb-3 flex items-baseline gap-2">
-            <span className="font-display text-4xl font-bold tabular-nums">{headline}</span>
-            <span className="text-xs text-muted">{sub}</span>
-          </div>
-          {children}
-        </div>
+        <div className="flex flex-col items-center p-4">{children}</div>
       </Card>
     </motion.div>
   );
 }
 
-function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
+function ChartCard({
+  title,
+  icon,
+  current,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  current: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="bg-grad-panel">
+      <CardHeader
+        title={`${title} — last 60s`}
+        icon={icon}
+        right={<span className="font-display text-lg font-bold tabular-nums">{current}</span>}
+      />
+      <div className="p-4">{children}</div>
+    </Card>
+  );
+}
+
+function HeroStat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-muted">
+      <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-lime/70">
         {icon}
         {label}
       </div>
-      <div className="font-display text-sm font-bold">{value}</div>
+      <div className="font-display text-base font-bold text-paper">{value}</div>
+    </div>
+  );
+}
+
+function DarkPill({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
+  return (
+    <span className="flex items-center gap-2 border-2 border-paper/25 bg-paper/5 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-paper/90">
+      {icon}
+      <span className="tabular-nums">{value}</span>
+      <span className="text-paper/50">{label}</span>
+    </span>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted">{k}</span>
+      <b className="text-ink">{v}</b>
     </div>
   );
 }
 
 function SpeedTile({ dir, value, icon }: { dir: string; value: number; icon: React.ReactNode }) {
   return (
-    <div className="border-2 border-ink bg-paper px-2 py-1.5">
-      <div className="flex items-center gap-1 uppercase tracking-wider text-muted">
+    <div className="border-2 border-ink bg-paper px-2 py-1.5 font-mono">
+      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted">
         {icon} {dir}
       </div>
       <div className="text-sm font-bold text-ink">{formatBytes(value)}/s</div>
@@ -215,50 +232,28 @@ function SpeedTile({ dir, value, icon }: { dir: string; value: number; icon: Rea
   );
 }
 
-function BigChart({ data }: { data: number[] }) {
-  const w = 1000;
-  const h = 160;
-  if (data.length < 2) {
-    return (
-      <div className="flex h-40 items-center justify-center font-mono text-sm text-muted">
-        collecting samples…
-      </div>
-    );
-  }
-  const stepX = w / (data.length - 1);
-  const pts = data.map((d, i) => [i * stepX, h - (d / 100) * (h - 8) - 4] as const);
-  const line = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  const area = `0,${h} ${line} ${w},${h}`;
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="h-40 w-full" preserveAspectRatio="none">
-      {[25, 50, 75].map((g) => (
-        <line key={g} x1="0" y1={h - (g / 100) * (h - 8) - 4} x2={w} y2={h - (g / 100) * (h - 8) - 4} stroke="#0B0B0B" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.3" />
-      ))}
-      <polygon points={area} fill="#BEF264" fillOpacity="0.35" />
-      <polyline points={line} fill="none" stroke="#0B0B0B" strokeWidth="2.5" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function DashboardSkeleton() {
   return (
-    <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="card h-56 animate-pulse-bar p-4">
-          <div className="mb-4 h-6 w-24 bg-paper" />
-          <div className="h-10 w-32 bg-paper" />
-        </div>
-      ))}
+    <div className="space-y-6">
+      <div className="card-ink h-20 animate-pulse-bar" />
+      <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="card h-64 animate-pulse-bar p-4">
+            <div className="mb-4 h-6 w-24 bg-paper" />
+            <div className="mx-auto h-28 w-28 rounded-full bg-paper" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 /* ---------------- helpers ---------------- */
 
-function coreColor(v: number): string {
-  if (v > 85) return "#FF4D4D";
-  if (v > 60) return "#FFB020";
-  return "#A3E635";
+function coreGradient(v: number): string {
+  if (v > 85) return "linear-gradient(to top, #FF4D4D, #FF7A7A)";
+  if (v > 60) return "linear-gradient(to top, #FFB020, #FFCA5A)";
+  return "linear-gradient(to top, #84CC16, #C6FF3D)";
 }
 
 function formatUptime(sec: number): string {

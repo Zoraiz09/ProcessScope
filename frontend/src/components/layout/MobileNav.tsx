@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { motion } from "framer-motion";
 import { NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
@@ -15,15 +16,27 @@ export function MobileNav() {
           key={item.path}
           to={item.path}
           end={item.path === "/app"}
-          className={({ isActive }) =>
-            cn(
-              "flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold uppercase",
-              isActive ? "bg-ink text-paper" : "text-ink-soft"
-            )
-          }
+          className="relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold uppercase"
         >
-          <item.icon size={18} strokeWidth={2.2} />
-          {item.short}
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <motion.span
+                  layoutId="mobilenav-active"
+                  className="absolute inset-0 z-0 bg-ink"
+                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                />
+              )}
+              <item.icon
+                size={18}
+                strokeWidth={2.2}
+                className={cn("relative z-10 transition-colors", isActive ? "text-paper" : "text-ink-soft")}
+              />
+              <span className={cn("relative z-10 transition-colors", isActive ? "text-paper" : "text-ink-soft")}>
+                {item.short}
+              </span>
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

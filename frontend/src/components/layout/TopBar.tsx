@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useMetricsContext } from "@/hooks/MetricsContext";
 import { StatusDot } from "./StatusDot";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Cpu, MemoryStick, Boxes, ChevronLeft, Home } from "lucide-react";
 import { formatPct } from "@/lib/utils";
 
@@ -31,15 +32,17 @@ export function TopBar({ title, subtitle }: { title: string; subtitle?: string }
       <div className="flex items-center gap-2">
         {snapshot && (
           <div className="hidden items-center gap-2 md:flex">
-            <MiniStat icon={<Cpu size={14} />} value={formatPct(snapshot.cpu.percent)} label="CPU" />
+            <MiniStat icon={<Cpu size={14} />} value={snapshot.cpu.percent} fmt={(n) => formatPct(n, 0)} label="CPU" />
             <MiniStat
               icon={<MemoryStick size={14} />}
-              value={formatPct(snapshot.memory.percent)}
+              value={snapshot.memory.percent}
+              fmt={(n) => formatPct(n, 0)}
               label="MEM"
             />
             <MiniStat
               icon={<Boxes size={14} />}
-              value={String(snapshot.system.process_count)}
+              value={snapshot.system.process_count}
+              fmt={(n) => String(Math.round(n))}
               label="PROC"
             />
           </div>
@@ -61,16 +64,18 @@ export function TopBar({ title, subtitle }: { title: string; subtitle?: string }
 function MiniStat({
   icon,
   value,
+  fmt,
   label,
 }: {
   icon: React.ReactNode;
-  value: string;
+  value: number;
+  fmt: (n: number) => string;
   label: string;
 }) {
   return (
     <div className="flex items-center gap-1.5 border-2 border-ink bg-panel px-2.5 py-1.5">
       <span className="text-ink-soft">{icon}</span>
-      <span className="font-mono text-sm font-bold tabular-nums">{value}</span>
+      <AnimatedNumber value={value} format={fmt} className="font-mono text-sm font-bold tabular-nums" />
       <span className="font-mono text-[9px] uppercase tracking-wider text-muted">{label}</span>
     </div>
   );

@@ -33,9 +33,9 @@ export const NAV: NavItem[] = [
   { label: "Resource Allocation", short: "Resources", path: "/app/resources", icon: Network, group: "Visualize", status: "sim" },
   { label: "Deadlock Detection", short: "Deadlock", path: "/app/deadlock", icon: AlertOctagon, group: "Simulate", status: "sim" },
   { label: "Historical Analytics", short: "Analytics", path: "/app/analytics", icon: LineChart, group: "Analyze", status: "live" },
-  { label: "System Replay", short: "Replay", path: "/app/replay", icon: History, group: "Analyze", status: "soon" },
+  { label: "System Replay", short: "Replay", path: "/app/replay", icon: History, group: "Analyze", status: "sim" },
   { label: "Alerts & Anomalies", short: "Alerts", path: "/app/alerts", icon: BellRing, group: "Analyze", status: "live" },
-  { label: "AI Analyst", short: "AI Analyst", path: "/app/ai", icon: Sparkles, group: "Analyze", status: "soon" },
+  { label: "AI Analyst", short: "AI Analyst", path: "/app/ai", icon: Sparkles, group: "Analyze", status: "live" },
 ];
 
 export const NAV_GROUPS = ["Monitor", "Visualize", "Simulate", "Analyze"] as const;

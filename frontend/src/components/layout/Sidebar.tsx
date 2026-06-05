@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { motion } from "framer-motion";
 import { NAV, NAV_GROUPS } from "@/lib/nav";
 import { Logo } from "./Logo";
 import { cn } from "@/lib/utils";
@@ -28,25 +29,45 @@ export function Sidebar() {
                   <NavLink
                     to={item.path}
                     end={item.path === "/app"}
-                    className={({ isActive }) =>
-                      cn(
-                        "group flex items-center gap-3 border-2 px-2.5 py-2 text-sm font-semibold transition-all",
-                        isActive
-                          ? "border-ink bg-ink text-paper shadow-brutal-sm"
-                          : "border-transparent text-ink-soft hover:border-ink hover:bg-paper"
-                      )
-                    }
+                    className="group relative flex items-center gap-3 px-2.5 py-2 text-sm font-semibold"
                   >
-                    <item.icon size={17} className="shrink-0" strokeWidth={2.2} />
-                    <span className="flex-1 truncate">{item.short}</span>
-                    {item.status && (
-                      <span
-                        className={cn(
-                          "h-2 w-2 border border-ink",
-                          statusBadge[item.status]
+                    {({ isActive }) => (
+                      <>
+                        {/* sliding active block (shared layout animation) */}
+                        {isActive && (
+                          <motion.span
+                            layoutId="sidebar-active"
+                            className="absolute inset-0 z-0 border-2 border-ink bg-ink shadow-brutal-sm"
+                            transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                          />
                         )}
-                        title={item.status}
-                      />
+                        {/* hover affordance for inactive items */}
+                        {!isActive && (
+                          <span className="absolute inset-0 z-0 border-2 border-transparent transition-colors duration-150 group-hover:border-ink group-hover:bg-paper" />
+                        )}
+                        <item.icon
+                          size={17}
+                          strokeWidth={2.2}
+                          className={cn(
+                            "relative z-10 shrink-0 transition-colors",
+                            isActive ? "text-paper" : "text-ink-soft group-hover:text-ink"
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "relative z-10 flex-1 truncate transition-colors",
+                            isActive ? "text-paper" : "text-ink-soft group-hover:text-ink"
+                          )}
+                        >
+                          {item.short}
+                        </span>
+                        {item.status && (
+                          <span
+                            className={cn("relative z-10 h-2 w-2 border border-ink", statusBadge[item.status])}
+                            title={item.status}
+                          />
+                        )}
+                      </>
                     )}
                   </NavLink>
                 </li>
